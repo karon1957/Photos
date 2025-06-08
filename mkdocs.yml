@@ -1,0 +1,31 @@
+# mkdocs.yml
+site_name: Photo-Docs
+site_description: Votre photothèque et vos livres en ligne
+theme:
+  name: material
+
+# Où sont vos docs
+docs_dir: docs
+site_dir: site
+
+nav:
+  - Accueil: index.md
+  - Galerie: gallery/gallery.md
+  - Livres: books/index.md
+
+plugins:
+  - search
+
+# On charge le CSS de la galerie **ET** du viewer PDF
+extra_css:
+  - javascripts/pdfjs/web/viewer.css
+  - stylesheets/gallery.css
+
+extra_javascript:
+  - javascripts/pdfjs/web/viewer.mjs
+  - javascripts/gallery.js
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition

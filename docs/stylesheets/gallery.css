@@ -1,0 +1,149 @@
+/* ================================================================
+   0. Ajustement de la police et des interlignes pour le panneau de filtres
+   ================================================================ */
+#filters {
+  font-size: 0.85rem !important;      /* environ 13.6px au lieu de la taille par défaut */
+  line-height: 1.2 !important;        /* interligne un peu plus serré */
+}
+
+/* Espacement réduit entre chaque label */
+#filters label {
+  display: block !important;
+  margin-bottom: 0.25rem !important;
+}
+
+/* Boutons du panneau (Tout sélectionner / Tout désélectionner) */
+#filters button {
+  font-size: 0.85rem !important;
+  line-height: 1.2 !important;
+  padding: 0.3rem 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* ---------------------------------------------------------------
+   1. Conteneur principal en flex : sidebar + galerie
+   --------------------------------------------------------------- */
+#gallery {
+  display: flex !important;
+}
+
+/* 2. Panneau de filtres (sidebar) à gauche */
+#filters {
+  width: 200px !important;
+  max-height: calc(100vh - 2rem) !important; /* pour éviter débordement hors écran */
+  overflow-y: auto !important;
+  padding: 1rem !important;
+  background: #f9f9f9 !important;
+  border-right: 1px solid #ddd !important;
+  box-sizing: border-box !important;
+}
+
+/* 3. Boutons "Tout sélectionner" / "Tout désélectionner" */
+#filters button {
+  background: #fff !important;
+  border: 1px solid #ccc !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+}
+
+/* 4. Styles pour inputs checkbox */
+#filters input[type="checkbox"] {
+  margin-right: 0.25rem !important;
+  vertical-align: middle !important;
+}
+
+/* 5. Section "Dossier", "Mot-clé", "Année", "Mois" */
+#filters strong {
+  display: block !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.25rem !important;
+  font-weight: 600 !important;
+}
+
+/* 6. Barre de séparation horizontale */
+#filters hr {
+  border: none !important;
+  border-top: 1px solid #ccc !important;
+  margin: 0.4rem 0 !important;
+}
+
+/* 7. Grille de vignettes : place à droite de #filters */
+.gallery-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+  gap: 0.75rem !important;
+  padding: 1rem !important;
+  width: calc(100% - 200px) !important; /* espace restant après 200px de #filters */
+  min-height: 200px !important; /* pour éviter “invisible” si rien */
+}
+
+/* 8. Chaque vignette (conteneur) : image + titre */
+.gallery-item {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  position: relative !important;
+}
+
+/* 8a. Lien ouvrant la lightbox */
+.gallery-item a {
+  display: block !important;
+  width: 100% !important;
+  border-radius: 4px !important;
+  overflow: hidden !important;
+  position: relative !important;
+  cursor: pointer !important;
+}
+
+/* 8b. Image miniature */
+.gallery-item img {
+  width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  object-fit: cover !important;
+  transition: transform 0.25s ease !important;
+}
+
+/* 8c. Effet zoom au survol */
+.gallery-item a:hover img {
+  transform: scale(1.03) !important;
+}
+
+/* 8d. Nom de fichier sous la vignette */
+.gallery-item .filename {
+  margin-top: 0.3rem !important;
+  font-size: 0.8rem !important; /* ~12.8px */
+  color: #333 !important;
+  word-break: break-word !important;
+  text-align: center !important;
+}
+
+/* 9. Responsive : passer en “colonne” sur petit écran */
+@media screen and (max-width: 800px) {
+  #gallery {
+    flex-direction: column !important;
+  }
+  #filters {
+    width: 100% !important;
+    max-height: 180px !important;
+    position: relative !important;
+    top: 0 !important;
+    border-right: none !important;
+    border-bottom: 1px solid #ddd !important;
+  }
+  .gallery-grid {
+    width: 100% !important;
+    padding: 0.75rem !important;
+  }
+}
+
+/* 10. Ajustement contenu MkDocs (si besoin) */
+@media screen and (min-width: 801px) {
+  .md-main__inner {
+    padding-left: 200px !important;
+  }
+}
+
+/* ================================================================
+   FIN de gallery.css – version 3.0
+   ================================================================ */

@@ -1,0 +1,175 @@
+
+/* Styles pour la galerie */
+.gallery-container {
+    display: flex;
+    flex-wrap: wrap; /* Permet aux éléments de passer à la ligne si l'espace est insuffisante */
+    gap: 20px; /* Espace entre la sidebar et la grille principale */
+    padding: 20px;
+}
+
+.gallery-sidebar {
+    flex: 0 0 250px; /* Largeur fixe pour la sidebar */
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: fit-content; /* La hauteur s'adapte au contenu */
+    position: sticky; /* Rend la sidebar "collante" au scroll */
+    top: 20px; /* Distance du haut de la fenêtre */
+    margin-right: 20px; /* Espace avec la grille principale */
+    overflow-y: auto; /* Permet le défilement si le contenu est trop long */
+    max-height: calc(100vh - 40px); /* Hauteur maximale pour laisser de la marge en haut et en bas */
+}
+
+.gallery-sidebar h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.filter-options {
+    margin-bottom: 20px;
+}
+
+/* Styles pour les groupes de filtres hiérarchiques */
+.filter-group {
+    margin-bottom: 5px; /* Petit espace entre les groupes */
+    padding-left: 0; /* Réinitialise le padding par default */
+}
+
+/* Indentation basée sur la profondeur */
+.filter-group.depth-0 { /* Niveau supérieur */ }
+.filter-group.depth-1 { padding-left: 15px; }
+.filter-group.depth-2 { padding-left: 30px; }
+.filter-group.depth-3 { padding-left: 45px; }
+.filter-group.depth-4 { padding-left: 60px; }
+/* Ajoutez plus de profondeurs si nécessaire selon votre hiérarchie */
+
+.keyword-toggle {
+    display: flex; /* Permet d'aligner l'input, le texte et l'icône */
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold; /* Pour les catégories principales */
+    color: #555;
+    margin-bottom: 3px;
+    user-select: none; /* Empêche la sélection de texte accidentelle */
+}
+
+.keyword-toggle input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+/* Style de l'icône de dépliage/repliage */
+.toggle-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: auto; /* Pousse l'icône à droite */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M7 10l5 5 5-5z"/></svg>'); /* Flèche vers le bas */
+    background-size: contain;
+    background-repeat: no-repeat;
+    transition: transform 0.2s;
+    transform: rotate(0deg); /* Flèche vers le bas par défaut (fermé) */
+}
+
+.toggle-icon.expanded {
+    transform: rotate(-90deg); /* Flèche vers la gauche (ou haut) quand déplié */
+}
+
+.children-container {
+    margin-top: 5px; /* Espace au-dessus des enfants */
+    /* display: none; est géré par le JavaScript */
+    font-weight: normal; /* Les enfants n'ont pas le gras du parent */
+}
+
+.children-container .filter-checkbox-label {
+    font-weight: normal; /* S'assure que les sous-catégories ne sont pas en gras */
+}
+
+/* Styles pour la grille de photos */
+.all-gallery-sections {
+    flex-grow: 1; /* Prend tout l'espace horizontal restant */
+    padding-right: 20px; /* Assure un espace à droite si pas de scrollbar */
+}
+
+.all-gallery-sections h2 {
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    text-align: center;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Colonnes responsives, min 280px */
+    gap: 20px; /* Espace entre les images */
+    justify-content: center; /* Centre les images si peu nombreuses */
+    max-width: 100%; /* S'assure que la grille ne dépasse pas la largeur du conteneur */
+}
+
+.gallery-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    text-align: center;
+    transition: transform 0.2s ease-in-out;
+    display: flex; /* Utilise flexbox pour l'alignement interne */
+    flex-direction: column; /* Organise le contenu verticalement */
+}
+
+.gallery-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.gallery-item img {
+    max-width: 100%;
+    height: auto; /* Garde le ratio */
+    display: block;
+    margin: 0 auto; /* Centrer l'image */
+    object-fit: cover; /* Assure que l'image couvre l'espace sans distorsion */
+    min-height: 200px; /* Pour éviter les miniatures trop petites */
+    max-height: 300px; /* Limite la taille des miniatures */
+}
+
+.gallery-item figcaption {
+    padding: 10px;
+    font-size: 0.9em;
+    color: #555;
+    background-color: #f9f9f9;
+    border-top: 1px solid #eee;
+    word-wrap: break-word; /* Permet aux longs noms de fichiers de se casser */
+}
+
+/* Boutons de filtre */
+.gallery-sidebar button {
+    display: block;
+    width: calc(100% - 10px); /* Un peu moins que 100% pour le padding */
+    padding: 10px 15px;
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
+.gallery-sidebar button:hover {
+    background-color: #0056b3;
+}
+
+.gallery-sidebar button#reset-filters {
+    background-color: #dc3545; /* Couleur différente pour le bouton de réinitialisation */
+}
+
+.gallery-sidebar button#reset-filters:hover {
+    background-color: #c82333;
+}

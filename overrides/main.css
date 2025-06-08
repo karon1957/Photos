@@ -1,0 +1,35 @@
+/* D:\photo-docs\overrides\main.css */
+
+/* Force la police Arial pour tout le corps du texte et les titres */
+/* !important est utilisé pour s'assurer que cette règle prend le dessus sur le thème MkDocs */
+body, h1, h2, h3, h4, h5, h6, p, li, a, span, div.md-typeset { /* Ajout de 'div.md-typeset' pour une couverture plus large */
+    font-family: 'Arial', sans-serif !important;
+    font-size: 14px !important; /* Définir la taille en pixels */
+    line-height: 1.6 !important; /* Améliore la lisibilité, important pour le rendu */
+}
+
+/* Ajuster la largeur maximale du contenu pour des lignes plus longues (facultatif) */
+.md-typeset {
+    max-width: 90em !important; /* Vous pouvez ajuster cette valeur */
+    padding-left: 2.5em !important; /* Espace à gauche */
+    padding-right: 2.5em !important; /* Espace à droite */
+}
+
+/* Le code aura toujours une police monospace pour la lisibilité */
+code, pre {
+    font-family: 'Fira Code', 'Cascadia Code', monospace !important; /* Exemple: Fira Code, police à chasse fixe populaire pour le code */
+    font-size: 0.9em !important; /* Légèrement plus petit pour le code */
+}
+
+/* Personnalisation des couleurs des admonitions (facultatif) */
+/* Exemple pour une admonition 'note' */
+/*
+.md-typeset .admonition.note {
+    background-color: #e0f2f7;  // Bleu clair
+    border-left-color: #2196f3; // Bleu vif
+}
+.md-typeset .admonition.warning {
+    background-color: #ffe0b2;  // Orange clair
+    border-left-color: #ff9800; // Orange vif
+}
+*/

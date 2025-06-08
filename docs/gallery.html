@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Photothèque</title>
+  <!-- On importe la feuille de styles compilée (version 3.0 de gallery.css) -->
+  <link rel="stylesheet" href="stylesheets/gallery.css">
+</head>
+<body>
+  <!-- CONTAINER PRINCIPAL DE LA GALERIE -->
+  <div id="gallery">
+    <!-- Le panneau de filtres est construit dynamiquement par gallery.js -->
+    <aside id="filters"></aside>
+
+    <!-- Ici seront injectées, au chargement, les vignettes (<div class="gallery-item">…) -->
+    <div class="gallery-grid"></div>
+
+    <!--
+      Ce bloc « all-photos » contient TOUS les <a> (liens bruts vers les images).
+      Ils sont masqués (display:none). gallery.js va lire ces <a> pour en extraire
+      data-folder, data-keywords, data-date, etc. et construire la grille + filtres.
+    -->
+    <div class="all-photos" style="display:none;">
+      <!-- Nous laissons ici deux marqueurs sur deux lignes : -->
+
+      <!-- ALL_PHOTOS_START -->
+      <!-- Lignes injectées automatiquement par filter-builder.js -->
+      <!-- ALL_PHOTOS_END -->
+
+    </div>
+  </div>
+
+  <!-- On inclut d’abord gallery.js pour construire la galerie -->
+  <script src="javascripts/gallery.js"></script>
+  <!-- Ensuite, on exécute filter-builder.js, qui va mettre à jour
+       la liste des <a> dans .all-photos avant que gallery.js ne déploie la grille.
+       NOTE IMPORTANTE : vous n’avez pas besoin de laisser ce <script> pour la 
+       production si vous exécutez filter-builder.js *avant* de déployer la page. 
+       Mais si vous voulez automatiser lors du chargement (par ex. en environnement 
+       de développement), vous pouvez le laisser. 
+  -->
+  <script src="javascripts/filter-builder.js"></script>
+</body>
+</html>
