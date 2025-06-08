@@ -24,15 +24,18 @@ OUTPUT_JSON      = "docs/books/books_data.json"
 # ————————————————
 # FONCTIONS pCloud (identiques à pcloud_sync)
 # ————————————————
-def list_folder(folderid, offset=0):
-    resp = requests.get(
-        f"{PCL_API_BASE}listfolder",
-        params={"access_token": API_TOKEN, "folderid": folderid, "offset": offset}
-    )
+def list_folder(folderid, offset=0, limit=1000):
+    params = {
+        "access_token": API_TOKEN,
+        "folderid": folderid,
+        "offset": offset,
+        "limit": limit,
+    }
+    resp = requests.get(f"{PCL_API_BASE}listfolder", params=params)
     data = resp.json()
     if data.get("result") != 0:
         raise RuntimeError(f"❌ Erreur listfolder : {data}")
-    return data["metadata"]["contents"]
+    return data["metadata"].get("contents", [])
 
 def get_download_link(fileid):
     resp = requests.get(
@@ -42,25 +45,34 @@ def get_download_link(fileid):
     data = resp.json()
     if data.get("result") != 0:
         raise RuntimeError(f"❌ Erreur getfilelink : {data}")
-    return data["hosts"][0] + data["path"]
+    host = data["hosts"][0]
+    if not host.startswith("http"):
+        host = "https://" + host
+    return host + data["path"]
 
 # ————————————————
 # PARCOURS RÉCUSRIF (PDFs uniquement)
 # ————————————————
 def traverse(folderid):
     items = []
-    for entry in list_folder(folderid):
-        if entry.get("isfolder"):
-            items.extend(traverse(entry["folderid"]))
-        else:
-            name, ext = entry["name"], os.path.splitext(entry["name"])[1].lower()
-            if ext != ".pdf":
-                continue  # ignorer tout autre format (.odt, etc.)
-            url = get_download_link(entry["fileid"])
-            items.append({
-                "title": name,
-                "url":   url
-            })
+    offset = 0
+    while True:
+        entries = list_folder(folderid, offset=offset)
+        if not entries:
+            break
+        offset += len(entries)
+        for entry in entries:
+            if entry.get("isfolder"):
+                items.extend(traverse(entry["folderid"]))
+            else:
+                name, ext = entry["name"], os.path.splitext(entry["name"])[1].lower()
+                if ext != ".pdf":
+                    continue  # ignorer tout autre format (.odt, etc.)
+                url = get_download_link(entry["fileid"])
+                items.append({
+                    "title": name,
+                    "url":   url
+                })
     return items
 
 def main():
