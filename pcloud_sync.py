@@ -14,7 +14,9 @@ import requests
 # CONFIGURATION
 # ————————————————
 # Remplacez ici par votre token si vous préférez en dur
-API_TOKEN      = "bMQrZNRzgW7NvywfZXyvbVkZQKSy7UVfRYHYeoDoMIDyv0tCjTLX"
+API_TOKEN      = os.environ.get("PCLOUD_TOKEN")
+if not API_TOKEN:
+    raise EnvironmentError("PCLOUD_TOKEN environment variable is required")
 PCL_API_BASE   = "https://api.pcloud.com"
 ROOT_FOLDER_ID = "26585006317"               # folderid de /Public/Photos
 OUTPUT_JSON    = "photo_metadata_all.json"   # on écrase directement ce fichier

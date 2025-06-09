@@ -13,10 +13,9 @@ import requests
 # ————————————————
 # CONFIGURATION
 # ————————————————
-API_TOKEN        = os.environ.get(
-    "PCLOUD_TOKEN",
-    "bMQrZNRzgW7NvywfZXyvbVkZQKSy7UVfRYHYeoDoMIDyv0tCjTLX"
-)
+API_TOKEN        = os.environ.get("PCLOUD_TOKEN")
+if not API_TOKEN:
+    raise EnvironmentError("PCLOUD_TOKEN environment variable is required")
 PCL_API_BASE     = "https://api.pcloud.com/"
 ROOT_FOLDER_ID   = "26585008409"          # ID du dossier Public/Folder/Livres
 OUTPUT_JSON      = "docs/books/books_data.json"

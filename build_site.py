@@ -10,7 +10,9 @@ Aucun appel n’est fait si le fichier a < 1 h.
 import os, sys, time, json, requests, pathlib
 
 # ————————————————————————— CONFIG
-API_TOKEN      = "bMQrZNRzgW7NvywfZXyvbVkZQKSy7UVfRYHYeoDoMIDyv0tCjTLX"
+API_TOKEN      = os.environ.get("PCLOUD_TOKEN")
+if not API_TOKEN:
+    raise EnvironmentError("PCLOUD_TOKEN environment variable is required")
 PCL_API_BASE   = "https://api.pcloud.com/"
 ROOT_FOLDER_ID = "26585008409"          # ID de …/Public/Books
 OUTPUT_JSON    = pathlib.Path("photo_metadata_all.json")
