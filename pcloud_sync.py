@@ -14,7 +14,9 @@ import requests
 # CONFIGURATION
 # ————————————————
 # Remplacez ici par votre token si vous préférez en dur
-API_TOKEN      = "bMQrZNRzgW7NvywfZXyvbVkZQKSy7UVfRYHYeoDoMIDyv0tCjTLX"
+API_TOKEN      = os.environ.get("PCLOUD_TOKEN")
+if not API_TOKEN:
+    raise EnvironmentError("PCLOUD_TOKEN environment variable is required")
 PCL_API_BASE   = "https://api.pcloud.com"
 ROOT_FOLDER_ID = "26585006317"               # folderid de /Public/Photos
 OUTPUT_JSON    = "photo_metadata_all.json"   # on écrase directement ce fichier
@@ -25,16 +27,19 @@ count = 0
 # ————————————————
 # FONCTIONS pCloud
 # ————————————————
-def list_folder(folderid):
-    """Liste le contenu du dossier pCloud."""
-    r = requests.get(
-        f"{PCL_API_BASE}/listfolder",
-        params={"access_token": API_TOKEN, "folderid": folderid}
-    )
+def list_folder(folderid, offset=0, limit=1000):
+    """Liste le contenu complet d'un dossier pCloud (pagination)."""
+    params = {
+        "access_token": API_TOKEN,
+        "folderid": folderid,
+        "offset": offset,
+        "limit": limit,
+    }
+    r = requests.get(f"{PCL_API_BASE}/listfolder", params=params)
     data = r.json()
     if "metadata" not in data:
         raise RuntimeError(f"❌ Erreur pCloud API (listfolder) : {data}")
-    return data["metadata"]["contents"]
+    return data["metadata"].get("contents", [])
 
 def get_download_link(fileid):
     """Récupère l’URL publique pour télécharger un fichier."""
@@ -45,33 +50,38 @@ def get_download_link(fileid):
     data = r.json()
     if "hosts" not in data:
         raise RuntimeError(f"❌ Erreur pCloud API (getfilelink) : {data}")
-    return data["hosts"][0] + data["path"]
+    host = data["hosts"][0]
+    if not host.startswith("http"):
+        host = "https://" + host
+    return host + data["path"]
 
 # ————————————————
 # PARCOURS RÉCUSRIF
 # ————————————————
 def traverse(folderid, parent_folder=None):
-    """
-    Récursive : 
-      - si c’est un dossier, on redescend dedans
-      - si c’est un fichier, on construit son entrée
-    """
+    """Parcourt récursivement un dossier pCloud."""
     global count
     items = []
-    for entry in list_folder(folderid):
-        count += 1
-        if count % 50 == 0:
-            print(f"> Scanné {count} éléments…")
-        if entry.get("isfolder"):
-            items.extend(traverse(entry["folderid"], entry["name"]))
-        else:
-            url = get_download_link(entry["fileid"])
-            items.append({
-                "title":   entry["name"],
-                "folder":  parent_folder,
-                "url":     url,
-                "created": entry.get("created")
-            })
+    offset = 0
+    while True:
+        entries = list_folder(folderid, offset=offset)
+        if not entries:
+            break
+        offset += len(entries)
+        for entry in entries:
+            count += 1
+            if count % 50 == 0:
+                print(f"> Scanné {count} éléments…")
+            if entry.get("isfolder"):
+                items.extend(traverse(entry["folderid"], entry["name"]))
+            else:
+                url = get_download_link(entry["fileid"])
+                items.append({
+                    "title":   entry["name"],
+                    "folder":  parent_folder,
+                    "url":     url,
+                    "created": entry.get("created")
+                })
     return items
 
 # ————————————————
