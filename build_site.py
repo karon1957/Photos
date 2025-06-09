@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-pcloud_books_sync.py  –  v1.2  (07 juin 2025)
+build_site.py – v1.2 (07 juin 2025)
 Indexe tous les PDF de /Public/Books sur pCloud
 et écrase photo_metadata_all.json.
 Aucun appel n’est fait si le fichier a < 1 h.
@@ -10,39 +10,57 @@ Aucun appel n’est fait si le fichier a < 1 h.
 import os, sys, time, json, requests, pathlib
 
 # ————————————————————————— CONFIG
-API_TOKEN      = "bMQrZNRzgW7NvywfZXyvbVkZQKSy7UVfRYHYeoDoMIDyv0tCjTLX"
+API_TOKEN      = os.environ.get("PCLOUD_TOKEN")
+if not API_TOKEN:
+    raise EnvironmentError("PCLOUD_TOKEN environment variable is required")
 PCL_API_BASE   = "https://api.pcloud.com/"
 ROOT_FOLDER_ID = "26585008409"          # ID de …/Public/Books
 OUTPUT_JSON    = pathlib.Path("photo_metadata_all.json")
 CACHE_TTL      = 3600                  # re-sync > 1 h
 
 # ————————————————————————— pCloud helpers
-def list_folder(fid: str):
-    r = requests.get(f"{PCL_API_BASE}listfolder",
-                     params={"auth": API_TOKEN, "folderid": fid})
+def list_folder(fid: str, offset: int = 0, limit: int = 1000):
+    params = {
+        "access_token": API_TOKEN,
+        "folderid": fid,
+        "offset": offset,
+        "limit": limit,
+    }
+    r = requests.get(f"{PCL_API_BASE}listfolder", params=params)
     d = r.json()
     if "metadata" not in d:
         raise RuntimeError(f"❌ Erreur listfolder : {d}")
-    return d["metadata"]["contents"]
+    return d["metadata"].get("contents", [])
 
 def get_link(fileid: str):
-    d = requests.get(f"{PCL_API_BASE}getfilelink",
-                     params={"auth": API_TOKEN, "fileid": fileid}).json()
-    return d["hosts"][0] + d["path"]
+    d = requests.get(
+        f"{PCL_API_BASE}getfilelink",
+        params={"access_token": API_TOKEN, "fileid": fileid},
+    ).json()
+    host = d["hosts"][0]
+    if not host.startswith("http"):
+        host = "https://" + host
+    return host + d["path"]
 
 # ————————————————————————— recursion
 def scan(fid, parent=None):
     res = []
-    for e in list_folder(fid):
-        if e.get("isfolder"):
-            res += scan(e["folderid"], e["name"])
-        elif e["name"].lower().endswith(".pdf"):
-            res.append({
-                "title":   e["name"],
-                "folder":  parent,
-                "url":     get_link(e["fileid"]),
-                "created": e.get("created")
-            })
+    offset = 0
+    while True:
+        entries = list_folder(fid, offset=offset)
+        if not entries:
+            break
+        offset += len(entries)
+        for e in entries:
+            if e.get("isfolder"):
+                res += scan(e["folderid"], e["name"])
+            elif e["name"].lower().endswith(".pdf"):
+                res.append({
+                    "title":   e["name"],
+                    "folder":  parent,
+                    "url":     get_link(e["fileid"]),
+                    "created": e.get("created")
+                })
     return res
 
 # ————————————————————————— main
