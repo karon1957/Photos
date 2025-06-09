@@ -46,7 +46,7 @@ def main():
             f"title: {base_title}",
             "---",
             "",
-            f'<iframe src="javascripts/pdfjs/web/viewer.mjs?file={b["url"]}" ',
+            f'<iframe src="/javascripts/pdfjs/web/viewer.mjs?file={b["url"]}" ',
             '        width="100%" height="800px"></iframe>'
         ]
         with open(page_dir / "index.md", "w", encoding="utf-8") as f:
