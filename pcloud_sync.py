@@ -23,42 +23,38 @@ OUTPUT_JSON    = "photo_metadata_all.json"   # on écrase directement ce fichier
 count = 0
 
 # ————————————————
-# FONCTIONS pCloud
+# FONCTIONS pCloud (identiques à pcloud_sync)
 # ————————————————
 def list_folder(folderid, offset=0, limit=1000):
-    """Liste le contenu complet d'un dossier pCloud (pagination)."""
     params = {
         "access_token": API_TOKEN,
         "folderid": folderid,
         "offset": offset,
         "limit": limit,
     }
-    r = requests.get(f"{PCL_API_BASE}/listfolder", params=params)
-    data = r.json()
-    if "metadata" not in data:
-        raise RuntimeError(f"❌ Erreur pCloud API (listfolder) : {data}")
+    resp = requests.get(f"{PCL_API_BASE}listfolder", params=params)
+    data = resp.json()
+    if data.get("result") != 0:
+        raise RuntimeError(f"❌ Erreur listfolder : {data}")
     return data["metadata"].get("contents", [])
 
 def get_download_link(fileid):
-    """Récupère l’URL publique pour télécharger un fichier."""
-    r = requests.get(
-        f"{PCL_API_BASE}/getfilelink",
+    resp = requests.get(
+        f"{PCL_API_BASE}getfilelink",
         params={"access_token": API_TOKEN, "fileid": fileid}
     )
-    data = r.json()
-    if "hosts" not in data:
-        raise RuntimeError(f"❌ Erreur pCloud API (getfilelink) : {data}")
+    data = resp.json()
+    if data.get("result") != 0:
+        raise RuntimeError(f"❌ Erreur getfilelink : {data}")
     host = data["hosts"][0]
     if not host.startswith("http"):
         host = "https://" + host
     return host + data["path"]
 
 # ————————————————
-# PARCOURS RÉCUSRIF
+# PARCOURS RÉCUSRIF (PDFs uniquement)
 # ————————————————
-def traverse(folderid, parent_folder=None):
-    """Parcourt récursivement un dossier pCloud."""
-    global count
+def traverse(folderid):
     items = []
     offset = 0
     while True:
@@ -67,30 +63,26 @@ def traverse(folderid, parent_folder=None):
             break
         offset += len(entries)
         for entry in entries:
-            count += 1
-            if count % 50 == 0:
-                print(f"> Scanné {count} éléments…")
             if entry.get("isfolder"):
-                items.extend(traverse(entry["folderid"], entry["name"]))
+                items.extend(traverse(entry["folderid"]))
             else:
+                name, ext = entry["name"], os.path.splitext(entry["name"])[1].lower()
+                if ext != ".pdf":
+                    continue  # ignorer tout autre format (.odt, etc.)
                 url = get_download_link(entry["fileid"])
                 items.append({
-                    "title":   entry["name"],
-                    "folder":  parent_folder,
-                    "url":     url,
-                    "created": entry.get("created")
+                    "title": name,
+                    "url":   url
                 })
     return items
 
-# ————————————————
-# SCRIPT PRINCIPAL
-# ————————————————
 def main():
-    print(f"> Démarrage du scan pCloud → folderid={ROOT_FOLDER_ID}")
-    photos = traverse(ROOT_FOLDER_ID)
+    print(f"→ Synchronisation pCloud Livres (folderid={ROOT_FOLDER_ID})…")
+    books = traverse(ROOT_FOLDER_ID)
+    os.makedirs(os.path.dirname(OUTPUT_JSON), exist_ok=True)
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
-        json.dump(photos, f, indent=2, ensure_ascii=False)
-    print(f"✅ {len(photos)} photos indexées dans → {OUTPUT_JSON}")
+        json.dump(books, f, indent=2, ensure_ascii=False)
+    print(f"✅ {len(books)} livres indexés dans → {OUTPUT_JSON}")
 
 if __name__ == "__main__":
     main()
