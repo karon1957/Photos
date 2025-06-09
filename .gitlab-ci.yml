@@ -1,6 +1,7 @@
 image: python:3.11
 
 variables:
+  # Pour mettre en cache les paquets pip entre les exécutions
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 stages:
@@ -8,13 +9,17 @@ stages:
   - deploy
 
 before_script:
-  - pip install mkdocs mkdocs-material
+  # Met à jour pip et installe les dépendances Python nécessaires
+  - pip install --upgrade pip
+  - pip install mkdocs mkdocs-material requests
 
 build:
   stage: build
   script:
-    - mkdocs build
+    # Lance le script de génération du site
+    - python build_site.py
   artifacts:
+    # Conserve le dossier généré pour l’étape suivante
     paths:
       - site/
 
@@ -23,9 +28,11 @@ pages:
   dependencies:
     - build
   script:
+    # Renomme site/ en public/ pour GitLab Pages
     - mv site public
   artifacts:
     paths:
       - public
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # Ne déploie que sur la branche par défaut (main/master)
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
