@@ -10,6 +10,7 @@ Lit docs/books/books_data.json et génère :
 import os
 import json
 import re
+import shutil
 from pathlib import Path
 
 IN_JSON = Path("docs/books/books_data.json")
@@ -24,6 +25,15 @@ def main():
     if not IN_JSON.exists():
         raise FileNotFoundError(f"{IN_JSON} introuvable. Lancez d’abord pcloud_books_sync.py")
     books = json.load(open(IN_JSON, encoding="utf-8"))
+
+    # Nettoyer l'ancien contenu (fichiers/dossiers de livres)
+    for item in OUT_DIR.iterdir():
+        if item.name in {"index.md", IN_JSON.name}:
+            continue
+        if item.is_dir():
+            shutil.rmtree(item)
+        else:
+            item.unlink()
 
     # 1. Générer index.md
     OUT_DIR.mkdir(parents=True, exist_ok=True)
