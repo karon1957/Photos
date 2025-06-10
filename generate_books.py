@@ -26,6 +26,9 @@ def main():
         raise FileNotFoundError(f"{IN_JSON} introuvable. Lancez d’abord pcloud_books_sync.py")
     books = json.load(open(IN_JSON, encoding="utf-8"))
 
+    # Make sure the output directory exists before trying to iterate over it
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
     # Nettoyer l'ancien contenu (fichiers/dossiers de livres)
     for item in OUT_DIR.iterdir():
         if item.name in {"index.md", IN_JSON.name}:
@@ -36,7 +39,6 @@ def main():
             item.unlink()
 
     # 1. Générer index.md
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
     index = ["---", "title: Livres", "---", "", "# 📚 Livres", ""]
     for b in books:
         base_title = Path(b["title"]).stem
