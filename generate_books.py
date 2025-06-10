@@ -11,12 +11,16 @@ import os
 import json
 import re
 import shutil
+import unicodedata
 from pathlib import Path
 
 IN_JSON = Path("docs/books/books_data.json")
 OUT_DIR = Path("docs/books")
 
-def slugify(text):
+def slugify(text: str) -> str:
+    """Convert `text` to a safe slug for file/folder names."""
+    text = unicodedata.normalize("NFKD", text)
+    text = text.encode("ascii", "ignore").decode("ascii")
     slug = re.sub(r"[^\w\s-]", "", text.lower())
     slug = re.sub(r"[\s_]+", "-", slug).strip("-")
     return slug
