@@ -7,7 +7,12 @@ et écrit docs/books/books_data.json.
 Aucun appel n’est fait si le fichier a < 1 h.
 """
 
-import os, sys, time, json, requests, pathlib
+import os
+import sys
+import time
+import json
+import requests
+from pathlib import Path
 
 # ————————————————————————— CONFIG
 API_TOKEN      = os.environ.get("PCLOUD_TOKEN")
@@ -15,14 +20,14 @@ if not API_TOKEN:
     raise EnvironmentError("PCLOUD_TOKEN environment variable is required")
 PCL_API_BASE   = "https://api.pcloud.com/"
 ROOT_FOLDER_ID = "26585008409"          # ID de …/Public/Books
-OUTPUT_JSON    = pathlib.Path("docs/books/books_data.json")
-CACHE_TTL      = 3600                  # re-sync > 1 h
+OUTPUT_JSON    = Path("docs/books/books_data.json")
+CACHE_TTL      = 3600                   # re-sync > 1 h
 
 # ————————————————————————— pCloud helpers
-def list_folder(fid: str, offset: int = 0, limit: int = 1000):
+def list_folder(folderid: str, offset: int = 0, limit: int = 1000):
     params = {
         "access_token": API_TOKEN,
-        "folderid": fid,
+        "folderid": folderid,
         "offset": offset,
         "limit": limit,
     }
@@ -32,42 +37,48 @@ def list_folder(fid: str, offset: int = 0, limit: int = 1000):
         raise RuntimeError(f"❌ Erreur listfolder : {d}")
     return d["metadata"].get("contents", [])
 
-def get_link(fileid: str):
-    d = requests.get(
-        f"{PCL_API_BASE}getfilelink",
-        params={"access_token": API_TOKEN, "fileid": fileid},
-    ).json()
+def get_link(fileid: str) -> str:
+    params = {
+        "access_token": API_TOKEN,
+        "fileid": fileid,
+    }
+    r = requests.get(f"{PCL_API_BASE}getfilelink", params=params)
+    d = r.json()
     if d.get("result") != 0:
         raise RuntimeError(f"❌ Erreur getfilelink : {d}")
-    host = d["hosts"][0]
+    hosts = d.get("hosts")
+    path  = d.get("path")
+    if not hosts or not path:
+        raise RuntimeError(f"❌ Réponse invalide getfilelink : {d}")
+    host = hosts[0]
     if not host.startswith("http"):
         host = "https://" + host
-    return host + d["path"]
+    return host + path
 
 # ————————————————————————— recursion
-def scan(fid, parent=None):
-    res = []
+def scan(folderid: str, parent: str = None):
+    result = []
     offset = 0
     while True:
-        entries = list_folder(fid, offset=offset)
+        entries = list_folder(folderid, offset=offset)
         if not entries:
             break
         offset += len(entries)
         for e in entries:
             if e.get("isfolder"):
-                res += scan(e["folderid"], e["name"])
+                result.extend(scan(e["folderid"], e["name"]))
             elif e["name"].lower().endswith(".pdf"):
-                res.append({
+                result.append({
                     "title":   e["name"],
                     "folder":  parent,
                     "url":     get_link(e["fileid"]),
                     "created": e.get("created")
                 })
-    return res
+    return result
 
 # ————————————————————————— main
 def main():
-    if OUTPUT_JSON.exists() and time.time() - OUTPUT_JSON.stat().st_mtime < CACHE_TTL:
+    if OUTPUT_JSON.exists() and (time.time() - OUTPUT_JSON.stat().st_mtime) < CACHE_TTL:
         print(f"⏩ Livres   SKIPPÉ (cache < {CACHE_TTL}s)")
         return
 
@@ -84,5 +95,8 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as exc:
+        print(f"❌ {exc}", file=sys.stderr)
+        sys.exit(1)
+
         print(exc, file=sys.stderr)
         sys.exit(1)
