@@ -11,7 +11,9 @@ import os
 import json
 import re
 import shutil
+ 40uism-codex/corriger-un-bug-majeur
 import unicodedata
+main
 from pathlib import Path
 
 IN_JSON = Path("docs/books/books_data.json")
@@ -30,7 +32,12 @@ def main():
         raise FileNotFoundError(f"{IN_JSON} introuvable. Lancez d’abord pcloud_books_sync.py")
     books = json.load(open(IN_JSON, encoding="utf-8"))
 
+ 40uism-codex/corriger-un-bug-majeur
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Make sure the output directory exists before trying to iterate over it
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+ main
     # Nettoyer l'ancien contenu (fichiers/dossiers de livres)
     for item in OUT_DIR.iterdir():
         if item.name in {"index.md", IN_JSON.name}:

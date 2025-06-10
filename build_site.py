@@ -37,8 +37,11 @@ def get_link(fileid: str):
         f"{PCL_API_BASE}getfilelink",
         params={"access_token": API_TOKEN, "fileid": fileid},
     ).json()
+ 40uism-codex/corriger-un-bug-majeur
     if d.get("result") != 0:
         raise RuntimeError(f"❌ Erreur getfilelink : {d}")
+
+ main
     host = d["hosts"][0]
     if not host.startswith("http"):
         host = "https://" + host
