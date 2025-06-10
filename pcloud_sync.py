@@ -58,8 +58,13 @@ def get_download_link(fileid):
 # ————————————————
 # PARCOURS RÉCUSRIF
 # ————————————————
+IMAGE_EXTS = {
+    ".jpg", ".jpeg", ".png", ".gif",
+    ".bmp", ".webp", ".tiff", ".heic",
+}
+
 def traverse(folderid, parent_folder=None):
-    """Parcourt récursivement un dossier pCloud."""
+    """Parcourt récursivement un dossier pCloud et ne retient que les images."""
     global count
     items = []
     offset = 0
@@ -75,13 +80,15 @@ def traverse(folderid, parent_folder=None):
             if entry.get("isfolder"):
                 items.extend(traverse(entry["folderid"], entry["name"]))
             else:
-                url = get_download_link(entry["fileid"])
-                items.append({
-                    "title":   entry["name"],
-                    "folder":  parent_folder,
-                    "url":     url,
-                    "created": entry.get("created")
-                })
+                ext = os.path.splitext(entry["name"])[1].lower()
+                if ext in IMAGE_EXTS:
+                    url = get_download_link(entry["fileid"])
+                    items.append({
+                        "title":   entry["name"],
+                        "folder":  parent_folder,
+                        "url":     url,
+                        "created": entry.get("created")
+                    })
     return items
 
 # ————————————————
