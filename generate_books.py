@@ -10,6 +10,7 @@ Lit docs/books/books_data.json et génère :
 import os
 import json
 import re
+import shutil
 from pathlib import Path
 
 IN_JSON = Path("docs/books/books_data.json")
@@ -25,26 +26,37 @@ def main():
         raise FileNotFoundError(f"{IN_JSON} introuvable. Lancez d’abord pcloud_books_sync.py")
     books = json.load(open(IN_JSON, encoding="utf-8"))
 
+    # Nettoyer l'ancien contenu (fichiers/dossiers de livres)
+    for item in OUT_DIR.iterdir():
+        if item.name in {"index.md", IN_JSON.name}:
+            continue
+        if item.is_dir():
+            shutil.rmtree(item)
+        else:
+            item.unlink()
+
     # 1. Générer index.md
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     index = ["---", "title: Livres", "---", "", "# 📚 Livres", ""]
     for b in books:
-        slug = slugify(b["title"])
-        index.append(f"- [{b['title']}](./{slug}/)")
+        base_title = Path(b["title"]).stem
+        slug = slugify(base_title)
+        index.append(f"- [{base_title}](./{slug}/)")
     with open(OUT_DIR / "index.md", "w", encoding="utf-8") as f:
         f.write("\n".join(index))
 
     # 2. Générer chaque page
     for b in books:
-        slug = slugify(b["title"])
+        base_title = Path(b["title"]).stem
+        slug = slugify(base_title)
         page_dir = OUT_DIR / slug
         page_dir.mkdir(exist_ok=True)
         content = [
             "---",
-            f"title: {b['title']}",
+            f"title: {base_title}",
             "---",
             "",
-            f'<iframe src="javascripts/pdfjs/web/viewer.mjs?file={b["url"]}" ',
+            f'<iframe src="/javascripts/pdfjs/web/viewer.mjs?file={b["url"]}" ',
             '        width="100%" height="800px"></iframe>'
         ]
         with open(page_dir / "index.md", "w", encoding="utf-8") as f:

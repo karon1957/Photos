@@ -37,7 +37,7 @@ with OUT.open("w", encoding="utf-8") as md:
     md.write('  <div class="all-photos" style="display:none">\n')
     for p in pics:
         # Normaliser la date : "YYYY:MM:DD" → "YYYY-MM-DD"
-        raw_date = p.get("date", "").strip()
+        raw_date = (p.get("date") or "").strip()
         if raw_date and ":" in raw_date:
             dt = raw_date.replace(":", "-")
         else:
