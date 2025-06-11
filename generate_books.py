@@ -7,7 +7,6 @@ Lit docs/books/books_data.json et génère :
   - un répertoire docs/books/‹slug›/index.md pour chaque livre
 """
 
-import os
 import json
 import re
 import shutil
@@ -43,7 +42,7 @@ def main():
             item.unlink()
 
     # 2. Générer docs/books/index.md
-    lines = [
+    index_lines = [
         "---",
         "title: Livres",
         "---",
@@ -52,28 +51,28 @@ def main():
         ""
     ]
     for entry in books:
-        titre = Path(entry["title"]).stem
-        slug  = slugify(titre)
-        lines.append(f"- [{titre}](./{slug}/)")
-    (OUT_DIR / "index.md").write_text("\n".join(lines), encoding="utf-8")
+        base_title = Path(entry["title"]).stem
+        slug = slugify(base_title)
+        index_lines.append(f"- [{base_title}](./{slug}/)")
+    (OUT_DIR / "index.md").write_text("\n".join(index_lines), encoding="utf-8")
 
     # 3. Générer une page par livre
     for entry in books:
-        titre = Path(entry["title"]).stem
-        slug  = slugify(titre)
-        dossier = OUT_DIR / slug
-        dossier.mkdir(exist_ok=True)
+        base_title = Path(entry["title"]).stem
+        slug = slugify(base_title)
+        page_dir = OUT_DIR / slug
+        page_dir.mkdir(exist_ok=True)
 
-        contenu = [
+        content = [
             "---",
-            f"title: {titre}",
+            f"title: {base_title}",
             "---",
             "",
-            # Intégration du PDF via le viewer adapté
-            f'<iframe src="/javascripts/pdfjs/web/viewer.mjs?file={entry["url"]}" ',
+            # Intégration du viewer PDF
+            f'<iframe src="/javascripts/pdfjs/web/viewer.mjs?file={entry["url"]}"',
             '        width="100%" height="800px"></iframe>'
         ]
-        (dossier / "index.md").write_text("\n".join(contenu), encoding="utf-8")
+        (page_dir / "index.md").write_text("\n".join(content), encoding="utf-8")
 
     print(f"✅ {len(books)} pages de livres générées dans → {OUT_DIR}")
 
