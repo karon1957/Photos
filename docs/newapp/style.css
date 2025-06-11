@@ -16,3 +16,12 @@ body {
   display: block;
   border-radius: 4px;
 }
+
+.books {
+  margin-top: 2rem;
+  padding-left: 1rem;
+}
+
+.books li {
+  margin-bottom: 0.5rem;
+}

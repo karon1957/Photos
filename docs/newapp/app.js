@@ -12,3 +12,21 @@ fetch('photos.json')
   .catch(err => {
     console.error('Erreur lors du chargement des photos:', err);
   });
+
+fetch('books.json')
+  .then(r => r.json())
+  .then(books => {
+    const list = document.getElementById('books');
+    books.forEach(b => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = b.url;
+      a.textContent = b.title;
+      a.target = '_blank';
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+  })
+  .catch(err => {
+    console.error('Erreur lors du chargement des livres:', err);
+  });
